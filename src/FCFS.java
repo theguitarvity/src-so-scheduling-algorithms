@@ -1,35 +1,22 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-public class FCFS {
+public class FCFS implements Processable{
 
-    public static void main(String[] args) {
-        List<Job> jobs = new ArrayList<>();
+
+    List<Job> jobs;
+
+    public FCFS(List<Job> jobs) {
+        this.jobs = jobs;
+    }
+
+    public void run(){
+
         List<Job> queue = new ArrayList<>();
-
 
         Job ongoinJob = null;
         int ongoingJobEstimatedCompletionTime = 0;
         int currentTime = 0;
-
-        while(true) {
-            System.out.println("Enter (job name, arrival time, burst time) or type 'confirm' to finish");
-            Scanner scan = new Scanner(System.in);
-            String[] input = scan.nextLine().split(" ");
-
-            if(input[0].equals("confirm")) {
-                break;
-            }
-
-            String name = input[0];
-            int arrivalTime = Integer.parseInt(input[1]);
-            int burstTime = Integer.parseInt(input[2]);
-
-            Job job = new Job(name, arrivalTime, burstTime);
-            jobs.add(job);
-        }
-
         while(true) {
             enqueueArrivedJobs(queue, jobs, currentTime);
             if(ongoingJobEstimatedCompletionTime == currentTime) {
@@ -55,7 +42,8 @@ public class FCFS {
         }
     }
 
-    private static void enqueueArrivedJobs(List<Job> queue, List<Job> jobs, int currentTime) {
+
+    private void enqueueArrivedJobs(List<Job> queue, List<Job> jobs, int currentTime) {
         for (int i = 0; i < jobs.size(); i++) {
             Job currentJob = jobs.get(i);
             if(currentJob.arrivalTime == currentTime) {
@@ -75,21 +63,5 @@ public class FCFS {
                 + "Completion time: "+job.completionTime + " \n"
                 + "Turn Arund Time: "+job.turnaroundTime +" \n"
                 + "Waiting Time: "+ job.waitingTime + "\n");
-    }
-
-    private static class Job {
-        String name;
-        int arrivalTime;
-        int burstTime;
-        int completionTime;
-        int turnaroundTime;
-        int waitingTime;
-
-
-        public Job(String name, int arrivalTime, int burstTime) {
-            this.name = name;
-            this.arrivalTime = arrivalTime;
-            this.burstTime = burstTime;
-        }
     }
 }

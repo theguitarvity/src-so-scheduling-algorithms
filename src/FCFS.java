@@ -1,31 +1,34 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class FCFS implements Processable{
 
 
     List<Job> jobs;
+    Queue<Job> queue;
+    int currentTime;
 
     public FCFS(List<Job> jobs) {
+
         this.jobs = jobs;
+        currentTime = 0;
+
+        queue = new PriorityQueue<>();
     }
 
     public void run(){
 
-        List<Job> queue = new ArrayList<>();
-
         Job ongoinJob = null;
         int ongoingJobEstimatedCompletionTime = 0;
-        int currentTime = 0;
+
         while(true) {
-            enqueueArrivedJobs(queue, jobs, currentTime);
+            enqueueArrivedJobs();
             if(ongoingJobEstimatedCompletionTime == currentTime) {
-                if(ongoinJob != null){
+                if(ongoinJob != null) {
                     calculateTurnAroundTimeAndWaitingTime(ongoinJob, ongoingJobEstimatedCompletionTime);
                     ongoinJob = null;
                 }
                 if(!queue.isEmpty()) {
-                    ongoinJob = queue.removeFirst();
+                    ongoinJob = queue.remove();
                     ongoingJobEstimatedCompletionTime = ongoinJob.burstTime + currentTime;
                 }
             }
@@ -43,18 +46,18 @@ public class FCFS implements Processable{
     }
 
 
-    private void enqueueArrivedJobs(List<Job> queue, List<Job> jobs, int currentTime) {
+    private void enqueueArrivedJobs() {
         for (int i = 0; i < jobs.size(); i++) {
             Job currentJob = jobs.get(i);
             if(currentJob.arrivalTime == currentTime) {
-                queue.add(jobs.remove(i));
+                this.queue.add(jobs.remove(i));
                 i--;
             }
 
         }
     }
 
-    private static void calculateTurnAroundTimeAndWaitingTime(Job job, int ongoingJobEstimatedCompletionTime) {
+    private void calculateTurnAroundTimeAndWaitingTime(Job job, int ongoingJobEstimatedCompletionTime) {
         job.completionTime = ongoingJobEstimatedCompletionTime;
         job.turnaroundTime = ongoingJobEstimatedCompletionTime - job.arrivalTime;
         job.waitingTime = job.turnaroundTime - job.burstTime;

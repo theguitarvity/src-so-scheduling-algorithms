@@ -18,7 +18,7 @@ public class Job implements Comparable<Job> {
 
     @Override
     public int compareTo(Job o) {
-        return Integer.compare(this.remainingTime, o.remainingTime);
+        return Integer.compare(this.arrivalTime, o.arrivalTime);
     }
 
 

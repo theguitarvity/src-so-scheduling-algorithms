@@ -71,6 +71,9 @@ public class ProcessManager {
             case 1 -> {
                 return new FCFS(jobs);
             }
+            case 2 -> {
+                return new SJF(jobs);
+            }
             case 3 -> {
                 return new SRTF(jobs);
             }

@@ -1,16 +1,13 @@
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Preemptive Shortest job first
- */
-public class SRTF implements Processable {
+public class SJF implements Processable{
 
     List<Job> jobs;
 
-    public SRTF(List<Job> jobs) {
+    public SJF(List<Job> jobs) {
         this.jobs = jobs.stream().sorted(
-                Comparator.comparing(j -> j.remainingTime)
+                Comparator.comparing(j -> j.burstTime)
         ).toList();
     }
 
@@ -21,17 +18,15 @@ public class SRTF implements Processable {
 
         while (completed < jobs.size()) {
             Job ongoingJob = null;
-
             ongoingJob = determinateCurrentJob(ongoingJob, currentTime);
 
-            currentTime++;
-
-            if (ongoingJob != null) {
-                boolean finished = processJobExecution(ongoingJob, currentTime);
-                if (finished) {
-                    completed++;
-                }
+            if (ongoingJob == null) {
+                currentTime++;
+                continue;
             }
+
+            currentTime = processJobExecution(ongoingJob, currentTime);
+            completed++;
         }
 
         finalizeExecution();
@@ -63,15 +58,15 @@ public class SRTF implements Processable {
         System.out.println("Avg TAT: " + avgTurnAroundTime);
     }
 
-    private boolean processJobExecution(Job ongoingJob, int currentTime) {
-        ongoingJob.clock();
-
-        if (ongoingJob.remainingTime == 0) {
-            calculateTurnAroundTimeAndWaitingTime(ongoingJob, currentTime);
-            return true;
+    private int processJobExecution(Job ongoingJob, int currentTime) {
+        while(ongoingJob.remainingTime > 0){
+            ongoingJob.clock();
+            currentTime++;
         }
 
-        return false;
+        calculateTurnAroundTimeAndWaitingTime(ongoingJob, currentTime);
+
+        return currentTime;
     }
 
     private boolean isJobReadyToBeProcessed(Job ongoingJob, int i, int currentTime) {
@@ -79,7 +74,7 @@ public class SRTF implements Processable {
                 && jobs.get(i).remainingTime > 0
                 && (
                 ongoingJob == null
-                        || jobs.get(i).remainingTime < ongoingJob.remainingTime
+                        || jobs.get(i).burstTime < ongoingJob.burstTime
         );
     }
 
@@ -93,4 +88,5 @@ public class SRTF implements Processable {
                 + "Turn Around Time: " + job.turnaroundTime + " \n"
                 + "Waiting Time: " + job.waitingTime + "\n");
     }
+
 }

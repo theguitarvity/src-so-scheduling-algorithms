@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -6,32 +5,9 @@ import java.util.Scanner;
 
 public class ProcessManager {
     static List<Job> jobs;
-    public ProcessManager() throws FileNotFoundException {
-        initializeJobsList();
-    }
-
-    private static void initializeJobsList() throws FileNotFoundException {
-        jobs = new ArrayList<>();
-        File file = new File("in.txt");
-        Scanner fileScanner = new Scanner(file);
-
-        while(fileScanner.hasNextLine()) {
-            String line = fileScanner.nextLine().trim();
-            if(line.isEmpty()) {
-                continue;
-            }
-            String[] input = line.split("\\s+");
-            String name = input[0];
-            int arrivalTime = Integer.parseInt(input[1]);
-            int burstTime = Integer.parseInt(input[2]);
-
-            Job job = new Job(name, arrivalTime, burstTime);
-            jobs.add(job);
-        }
-    }
 
     public static void main(String[] args) throws FileNotFoundException {
-        initializeJobsList();
+        SchedulingConfig config = InputParser.parse("in.txt");
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
 
@@ -45,10 +21,12 @@ public class ProcessManager {
                 continue;
             }
 
+            List<Job> jobs = buildImmutableJobs(config.getJobs());
             Processable processable = extractStrategyFromUserInput(
                     option,
-                    jobs.stream().map(job -> new Job(job.name, job.arrivalTime, job.burstTime))
-                            .collect(java.util.stream.Collectors.toCollection(ArrayList::new))
+                    jobs,
+                    config.getQuantum()
+
             );
 
 
@@ -61,12 +39,16 @@ public class ProcessManager {
 
         }
 
-
         System.out.println("Digite qual o ");
 
     }
 
-    private static Processable extractStrategyFromUserInput(int option, List<Job> jobs) {
+    private static List<Job> buildImmutableJobs(List<Job> jobs) {
+        return jobs.stream().map(job -> new Job(job.name, job.arrivalTime, job.burstTime, job.priority))
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+    }
+
+    private static Processable extractStrategyFromUserInput(int option, List<Job> jobs, int quantum) {
         switch (option) {
             case 1 -> {
                 return new FCFS(jobs);
@@ -76,6 +58,12 @@ public class ProcessManager {
             }
             case 3 -> {
                 return new SRTF(jobs);
+            }
+            case 4 -> {
+                return new PriorityScheduling(jobs);
+            }
+            case 5 ->  {
+                return new RoundRobin(jobs, quantum);
             }
         }
         return null;
